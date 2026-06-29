@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenWebDialog 測試頁</title>
+    <style>
+        body {
+            font-family: -apple-system, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+            margin: 0;
+        }
+        h2 {
+            color: #f0a500;
+            border-bottom: 1px solid #444;
+            padding-bottom: 8px;
+        }
+        .group {
+            margin-bottom: 28px;
+        }
+        .label {
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 6px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-get-inapp  { background: #2e7d32; color: #fff; }
+        .btn-get-safari { background: #1565c0; color: #fff; }
+        .btn-post-inapp { background: #6a1b9a; color: #fff; }
+        .btn-post-safari{ background: #ad1457; color: #fff; }
+        .btn-empty-inapp{ background: #555;    color: #fff; }
+        .btn-empty-url  { background: #333;    color: #aaa; }
+        .log-box {
+            background: #111;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12px;
+            color: #0f0;
+            min-height: 80px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .clear-btn {
+            background: #333;
+            color: #aaa;
+            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 4px;
+            width: auto;
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>OpenWebDialog 測試頁</h2>
+
+<!-- 情境1 -->
+<div class="group">
+    <div class="label">情境1：GET + 內開 webview (inApp=Y)</div>
+    <button class="btn-get-inapp" onclick="test_GET_InApp()">
+        GET 內開
+    </button>
+</div>
+
+<!-- 情境2 -->
+<div class="group">
+    <div class="label">情境2：GET + 外開 Safari (inApp=N)</div>
+    <button class="btn-get-safari" onclick="test_GET_Safari()">
+        GET 外開 Safari
+    </button>
+</div>
+
+<!-- 情境3 -->
+<div class="group">
+    <div class="label">情境3：POST + 內開 webview (inApp=Y)</div>
+    <button class="btn-post-inapp" onclick="test_POST_InApp()">
+        POST 內開
+    </button>
+</div>
+
+<!-- 情境4 -->
+<div class="group">
+    <div class="label">情境4：POST + 外開 Safari (inApp=N)</div>
+    <button class="btn-post-safari" onclick="test_POST_Safari()">
+        POST 外開 Safari
+    </button>
+</div>
+
+<!-- 情境5 -->
+<div class="group">
+    <div class="label">情境5：inApp 空白（預設應走內開）</div>
+    <button class="btn-empty-inapp" onclick="test_inApp_Empty()">
+        inApp 空白
+    </button>
+</div>
+
+<!-- 情境6 -->
+<div class="group">
+    <div class="label">情境6：url 為空（應直接 return，不開任何頁面）</div>
+    <button class="btn-empty-url" onclick="test_Empty_URL()">
+        空 URL
+    </button>
+</div>
+
+<!-- Log -->
+<div class="group">
+    <button class="clear-btn" onclick="clearLog()">清除 Log</button>
+    <div class="log-box" id="logBox">等待測試...</div>
+</div>
+
+<script>
+    const TARGET_URL = "https://www.capital.com.tw/web/#/home";
+
+    function log(msg) {
+        const box = document.getElementById("logBox");
+        const time = new Date().toLocaleTimeString();
+        box.textContent += `\n[${time}] ${msg}`;
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function clearLog() {
+        document.getElementById("logBox").textContent = "";
+    }
+
+    function sendToNative(data) {
+        const json = JSON.stringify(data);
+        log("發送: " + json);
+        try {
+            window.webkit.messageHandlers.OpenWebDialog.postMessage(data);
+            log("✅ postMessage 成功");
+        } catch(e) {
+            log("❌ postMessage 失敗: " + e.message);
+            log("（非 App 內 WebView 環境，無法呼叫 Native）");
+        }
+    }
+
+    // 情境1: GET + inApp=Y
+    function test_GET_InApp() {
+        sendToNative({
+            title:    "Get範例",
+            url:      TARGET_URL,
+            method:   "0",
+            postData: "",
+            inApp:    "Y"
+        });
+    }
+
+    // 情境2: GET + inApp=N
+    function test_GET_Safari() {
+        sendToNative({
+            title:    "Get外開範例",
+            url:      TARGET_URL,
+            method:   "0",
+            postData: "",
+            inApp:    "N"
+        });
+    }
+
+    // 情境3: POST + inApp=Y
+    function test_POST_InApp() {
+        sendToNative({
+            title:    "Post範例",
+            url:      TARGET_URL,
+            method:   "1",
+            postData: "id=A123456789&token=abcdef&source=R",
+            inApp:    "Y"
+        });
+    }
+
+    // 情境4: POST + inApp=N
+    function test_POST_Safari() {
+        sendToNative({
+            title:    "Post外開範例",
+            url:      TARGET_URL,
+            method:   "1",
+            postData: "id=A123456789&token=abcdef&source=R",
+            inApp:    "N"
+        });
+    }
+
+    // 情境5: inApp 空白
+    function test_inApp_Empty() {
+        sendToNative({
+            title:    "",
+            url:      TARGET_URL,
+            method:   "0",
+            postData: "",
+            inApp:    ""
+        });
+    }
+
+    // 情境6: url 為空
+    function test_Empty_URL() {
+        sendToNative({
+            title:    "空URL測試",
+            url:      "",
+            method:   "0",
+            postData: "",
+            inApp:    "Y"
+        });
+    }
+</script>
+
+</body>
+</html>
