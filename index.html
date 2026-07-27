@@ -42,6 +42,9 @@
         .btn-post-safari{ background: #ad1457; color: #fff; }
         .btn-empty-inapp{ background: #555;    color: #fff; }
         .btn-empty-url  { background: #333;    color: #aaa; }
+        .btn-scheme-browser { background: #00838f; color: #fff; }
+        .btn-scheme-pdf      { background: #d84315; color: #fff; }
+        .btn-scheme-logout   { background: #b71c1c; color: #fff; }
         .log-box {
             background: #111;
             border: 1px solid #444;
@@ -116,6 +119,32 @@
     </button>
 </div>
 
+<h2>URL Scheme 測試 (tdccmvote://)</h2>
+
+<!-- 情境7 -->
+<div class="group">
+    <div class="label">情境7：外開連結 tdccmvote://openBrowser?url=XXX</div>
+    <button class="btn-scheme-browser" onclick="test_Scheme_OpenBrowser()">
+        Scheme 外開連結
+    </button>
+</div>
+
+<!-- 情境8 -->
+<div class="group">
+    <div class="label">情境8：開啟 PDF tdccmvote://openPdf?url=XXX</div>
+    <button class="btn-scheme-pdf" onclick="test_Scheme_OpenPdf()">
+        Scheme 開啟 PDF
+    </button>
+</div>
+
+<!-- 情境9 -->
+<div class="group">
+    <div class="label">情境9：登出 tdccmvote://logout</div>
+    <button class="btn-scheme-logout" onclick="test_Scheme_Logout()">
+        Scheme 登出
+    </button>
+</div>
+
 <!-- Log -->
 <div class="group">
     <button class="clear-btn" onclick="clearLog()">清除 Log</button>
@@ -124,6 +153,12 @@
 
 <script>
     const TARGET_URL = "https://www.capital.com.tw/web/#/home";
+
+    // 測試用外部連結（隨便一個網站）
+    const SCHEME_BROWSER_URL = "https://www.google.com";
+
+    // 測試用 PDF 網址（W3C 官方提供的公開測試 PDF 範例，可自行替換）
+    const SCHEME_PDF_URL = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
 
     function log(msg) {
         const box = document.getElementById("logBox");
@@ -145,6 +180,17 @@
         } catch(e) {
             log("❌ postMessage 失敗: " + e.message);
             log("（非 App 內 WebView 環境，無法呼叫 Native）");
+        }
+    }
+
+    // 呼叫 tdccmvote:// URL Scheme
+    function openScheme(schemeUrl) {
+        log("呼叫 Scheme: " + schemeUrl);
+        try {
+            window.location.href = schemeUrl;
+            log("✅ 已嘗試呼叫 window.location.href");
+        } catch(e) {
+            log("❌ 呼叫失敗: " + e.message);
         }
     }
 
@@ -212,6 +258,23 @@
             postData: "",
             inApp:    "Y"
         });
+    }
+
+    // 情境7: tdccmvote://openBrowser?url=XXX
+    function test_Scheme_OpenBrowser() {
+        const scheme = "tdccmvote://openBrowser?url=" + encodeURIComponent(SCHEME_BROWSER_URL);
+        openScheme(scheme);
+    }
+
+    // 情境8: tdccmvote://openPdf?url=XXX
+    function test_Scheme_OpenPdf() {
+        const scheme = "tdccmvote://openPdf?url=" + encodeURIComponent(SCHEME_PDF_URL);
+        openScheme(scheme);
+    }
+
+    // 情境9: tdccmvote://logout
+    function test_Scheme_Logout() {
+        openScheme("tdccmvote://logout");
     }
 </script>
 
