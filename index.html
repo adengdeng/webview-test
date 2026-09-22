@@ -45,6 +45,8 @@
         .btn-scheme-browser { background: #00838f; color: #fff; }
         .btn-scheme-pdf      { background: #d84315; color: #fff; }
         .btn-scheme-logout   { background: #b71c1c; color: #fff; }
+        .btn-jump-stock  { background: #3949ab; color: #fff; }
+        .btn-jump-credit { background: #00695c; color: #fff; }
         .log-box {
             background: #111;
             border: 1px solid #444;
@@ -145,6 +147,28 @@
     </button>
 </div>
 
+<h2>開戶 URL 測試 (jumpToStock / jumpToCredit)</h2>
+<div class="label" style="margin-bottom:14px;">
+    這兩個 marker 是原生端在攔截 WebView「導覽」時，用 containsString 比對整段 URL 字串觸發的，
+    不是走 postMessage，也不需要帶任何參數 —— 只要導覽的網址中含有該字串即可。
+</div>
+
+<!-- 情境10 -->
+<div class="group">
+    <div class="label">情境10：開股票戶 !!jumpToStock!!</div>
+    <button class="btn-jump-stock" onclick="test_JumpToStock()">
+        跳轉開股票戶
+    </button>
+</div>
+
+<!-- 情境11 -->
+<div class="group">
+    <div class="label">情境11：開複委託/信用戶 !!jumpToCredit!!</div>
+    <button class="btn-jump-credit" onclick="test_JumpToCredit()">
+        跳轉開複委託/信用戶
+    </button>
+</div>
+
 <!-- Log -->
 <div class="group">
     <button class="clear-btn" onclick="clearLog()">清除 Log</button>
@@ -159,6 +183,10 @@
 
     // 測試用 PDF 網址（W3C 官方提供的公開測試 PDF 範例，可自行替換）
     const SCHEME_PDF_URL = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+
+    // 測試用開戶導覽網址（marker 前後帶什麼都不影響判斷，只要字串裡含有 marker）
+    const JUMP_STOCK_URL  = "https://www.capital.com.tw/web/!!jumpToStock!!";
+    const JUMP_CREDIT_URL = "https://www.capital.com.tw/web/!!jumpToCredit!!";
 
     function log(msg) {
         const box = document.getElementById("logBox");
@@ -275,6 +303,18 @@
     // 情境9: tdccmvote://logout
     function test_Scheme_Logout() {
         openScheme("tdccmvote://logout");
+    }
+
+    // 情境10: 觸發 openAccount (!!jumpToStock!!)
+    function test_JumpToStock() {
+        log("導覽至: " + JUMP_STOCK_URL);
+        window.location.href = JUMP_STOCK_URL;
+    }
+
+    // 情境11: 觸發 openOtherAccount (!!jumpToCredit!!)
+    function test_JumpToCredit() {
+        log("導覽至: " + JUMP_CREDIT_URL);
+        window.location.href = JUMP_CREDIT_URL;
     }
 </script>
 
